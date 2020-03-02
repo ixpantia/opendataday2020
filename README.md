@@ -17,7 +17,7 @@ Si estás interesado en formar parte de esta actividad podés inscribirte [aquí
 # Código de conducta
 
 Para el evento tenemos un código de conducta. Lo podés leer todo
-[acá](https://github.com/ixpantia/opendataday2020/doc/Brochure Datatón v2.pdf)
+[acá](https://github.com/ixpantia/opendataday2020/blob/master/doc/codigo-de-conducta.md)
 pero básicamente queremos procurar un ambiente donde todos compartimos lo que
 hacemos y lo que sabemos sin prepotencia alguna, además de aprender a construir
 en comunidad.
