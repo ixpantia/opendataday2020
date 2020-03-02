@@ -14,4 +14,17 @@ Datatón, tendrán lugar el **sábado 7 de marzo en el CENAC**.
 
 Si estás interesado en formar parte de esta actividad podés inscribirte [aquí](https://docs.google.com/forms/d/e/1FAIpQLSeCVIxQzYgE1Dx29KzDPe4WljpI5Y145N8HrFsmFL3fTibCwQ/viewform)
 
+# Código de conducta
+
+Para el evento tenemos un código de conducta. Lo podés leer todo
+[acá](https://github.com/ixpantia/opendataday2020/doc/Brochure Datatón v2.pdf)
+pero básicamente queremos procurar un ambiente donde todos compartimos lo que
+hacemos y lo que sabemos sin prepotencia alguna, además de aprender a construir
+en comunidad.
+
+# Detalles del Datatón
+
+Para más detalles del datatón hemos creado un documento en formato pdf que 
+contiene más información de la actividad. Lo podés revisar [acá](https://github.com/ixpantia/opendataday2020/doc/Brochure Datatón v2.pdf)
+
 
