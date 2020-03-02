@@ -25,6 +25,6 @@ en comunidad.
 # Detalles del Datatón
 
 Para más detalles del datatón hemos creado un documento en formato pdf que 
-contiene más información de la actividad. Lo podés revisar [acá](https://github.com/ixpantia/opendataday2020/doc/Brochure Datatón v2.pdf)
+contiene más información de la actividad. Lo podés revisar [acá](https://github.com/ixpantia/opendataday2020/blob/master/doc/Brochure%20Datato%CC%81n%20v2.pdf)
 
 
