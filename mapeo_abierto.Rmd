@@ -1,0 +1,22 @@
+---
+title: "Mapeo abierto"
+author: "Guillermo Duran & Patrick Santamaría"
+date: "3/3/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gdalUtils)
+library(rgdal)
+library(rmapshaper)
+
+#install.packages(c("gdalUtils", "rgdal", "rmapshaper"))
+```
+
+```{r}
+
+```
+
