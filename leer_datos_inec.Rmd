@@ -1,0 +1,41 @@
+---
+title: "Leer datos INEC (.sav)"
+author: "Frans van Dunné"
+date: "3/3/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introducción 
+
+EL INEC de Costa Rica tienen un [Programa Acelerado de Datos INEC / Costa Rica](http://sistemas.inec.cr/pad4/index.php/home) a travez del cual se pueden acceder diversos conjuntos de datos. Los datos se presentan en un formato con la extensión `.sav` el cual require dar unos pasos antes de leerlo.
+
+## El formato .sav
+
+Los datos del INEC se presentan como datos del tipo `.sav` que es la extensión para archivos binarios de SPSS, un software comercial de IBM para el análisis de datos. 
+
+Por suerte podemos leer esto en R usando el paquete `harbor`
+
+```{r instalar harbor, eval = FALSE}
+install.packages("foreign")
+```
+
+## Leer datos
+
+```{r}
+library(foreign)
+archivo <- file.choose()
+datos <- read.spss(archivo, to.data.frame = TRUE, add.undeclared.levels = "no")
+```
+
+Ahora tenemos los datos disponibles, pero lee casi todo como factor (incluyendo datos numericos de salarios)
+
+```{r}
+library(dplyr)
+glimpse(datos)
+```
