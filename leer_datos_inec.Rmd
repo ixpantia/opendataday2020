@@ -33,7 +33,7 @@ archivo <- file.choose()
 datos <- read.spss(archivo, to.data.frame = TRUE, add.undeclared.levels = "no")
 ```
 
-Ahora tenemos los datos disponibles, pero lee casi todo como factor (incluyendo datos numericos de salarios)
+Ahora tenemos los datos disponibles.
 
 ```{r}
 library(dplyr)
