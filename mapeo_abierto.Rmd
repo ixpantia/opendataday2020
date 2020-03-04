@@ -1,22 +1,137 @@
 ---
 title: "Mapeo abierto"
 author: "Guillermo Duran & Patrick Santamaría"
-date: "3/3/2020"
+date: "7/3/2020"
 output: html_document
 editor_options: 
   chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 library(gdalUtils)
 library(rgdal)
 library(rmapshaper)
+library(sf)
+library(raster)
+library(tidyverse)
+library(leaflet)
 
 #install.packages(c("gdalUtils", "rgdal", "rmapshaper"))
 ```
 
-```{r}
+# Ejemplo de movilidad.
 
+Lo primero que hacemos es buscar de preferencia un WFS (Web Feature Server) para listar los archivos espaciales disponibles en ese WFS. Para este caso listamos el WFS del `MOPT` y el `IGN Cartografía 1:5mil`. Son las propuestas para esta temática.
+
+```{r}
+dsn_mopt <- "WFS:http://geos.snitcr.go.cr/be/IGN_MOPT/wfs?"
+dsn_prov <- "WFS:http://geos.snitcr.go.cr/be/IGN_5/wfs?"
+
+ogrListLayers(dsn_mopt) #Lista de capas disponibles en el WFS
+
+ogrListLayers(dsn_prov) 
 ```
 
+Seguidamente leemos alguno de los archivos espaciales listados en el WFS, en este caso la red vial nacional y los limites cantonales, uno de cada WFS.
+
+```{r}
+red_vial <- st_read(dsn_mopt, "IGN_MOPT:red_vial_nacional") #
+
+cantones <- st_read(dsn_prov, "IGN_5:limitecantonal_5k")
+```
+
+Una recomendación cuando se trabaja con polígonos es simplificarlos, esto siempre que no interese tener exactitud en los límites, la idea de hacer esto es suavizar los bordes de los polígonos para tener menos puntos que lo conformen y que sean menos pesados para trabajar.
+
+```{r}
+cantones <- ms_simplify(cantones)
+```
+
+Ahora bien, el objeto `red vial` contiene el nombre del cantón y la provincia, lo cuál es útil en términos de visualización, veamos un ejemplo de visualización. Para este caso mostraremos las vias asociadas a los cantones de Palmares, Atenas y Naranjo, utilizando el paquete `leaflet`:
+
+Primero filtramos las vias asociadas a estos cantones y cambiamos el sistema de coordenadas a WGS84 pues `leaflet` trabaja bajo ese sistema:
+
+```{r}
+vias_seleccionadas <- red_vial %>% 
+  filter(nom_cant %in% c("Palmares", "Naranjo", "Atenas")) %>%
+  st_transform(crs = "+init=epsg:4326") #cambiar sistema de coordenadas
+```
+
+Y ahora confeccionamos el mapa: 
+
+```{r}
+paleta_colores <- colorFactor(
+  palette = 'Dark2',
+  domain = vias_seleccionadas$nom_cant) #paleta de colores para el mapa, definida en la variable nom_cant
+
+leaflet() %>%
+  addTiles() %>% #mapa base
+  setView(lat = 10, lng = -84, zoom = 9) %>% #enfoque de la vista en el mapa para Costa Rica
+  addPolylines(data = vias_seleccionadas,
+               popup = paste0("<strong> Vía: </strong>", 
+                              vias_seleccionadas$descripcio,
+                              "<br><strong>","Provincia",": ","</strong>", 
+                              vias_seleccionadas$nom_prov,
+                              "<br><strong>","Cantón",": ","</strong>",
+                              vias_seleccionadas$nom_cant,
+                              "<br><strong>","Distrito",": ","</strong>",
+                              vias_seleccionadas$nom_dist),
+               color = ~paleta_colores(vias_seleccionadas$nom_cant),
+               weight = 4,
+               opacity = 1,
+               group = "Vias",
+               highlight = highlightOptions(weight = 4,
+                                            color = "red")) #agregar lineas al mapa
+```
+
+Como segundo ejercicio didáctico, pongamos debajo de las vias, los poligonos de los cantones respectivos y agreguemos un control de capas para poder quitar y poner las capas cuando se desee.
+
+Primero filtramos del objeto `cantones`, los mismos que seleccionamos anteriormente y dejamos únicamente esos 3 polígonos:
+
+```{r}
+cantones_seleccionados <- cantones %>% 
+  filter(canton %in% c("Palmares", "Naranjo", "Atenas")) %>%
+  st_transform(crs = "+init=epsg:4326")
+```
+
+Y ahora confeccionamos el mapa: 
+
+```{r}
+leaflet() %>%
+  addTiles() %>%
+  setView(lat = 10, lng = -84, zoom = 9) %>%
+  addPolygons(data = cantones_seleccionados, 
+              fillColor ="pink",
+              popup = paste0("<strong> Provincia: </strong>", 
+                              cantones_seleccionados$provincia,
+                              "<br><strong>","Cantón",": ","</strong>",
+                              cantones_seleccionados$canton),
+              color = "black",
+              fillOpacity = 0.5,
+              opacity = 1,
+              weight = 4,
+              group = "Cantones",
+              highlight = highlightOptions(weight = 4,
+                                           color = "blue")) %>% #agrega poligonos
+  addPolylines(data = vias_seleccionadas,
+               popup = paste0("<strong> Vía: </strong>", 
+                              vias_seleccionadas$descripcio,
+                              "<br><strong>","Provincia",": ","</strong>", 
+                              vias_seleccionadas$nom_prov,
+                              "<br><strong>","Cantón",": ","</strong>",
+                              vias_seleccionadas$nom_cant,
+                              "<br><strong>","Distrito",": ","</strong>",
+                              vias_seleccionadas$nom_dist),
+               color = ~paleta_colores(vias_seleccionadas$nom_cant),
+               weight = 4,
+               opacity = 1,
+               group = "Vias",
+               highlight = highlightOptions(weight = 4,
+                                            color = "red")) %>%
+  addLayersControl(overlayGroups = c("Cantones", "Vias"),
+                       options = layersControlOptions(collapsed = TRUE)) #control de capa en la esquina superior derecha, los grupos deben coincidir con los definidos arriba en el parametro group
+  
+```
+
+
+# Ejemplo con 
