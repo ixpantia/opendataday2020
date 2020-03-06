@@ -1,0 +1,45 @@
+Variable,Definición
+REGION,Region del Pais
+FACTOR,Factor
+HOGAR,Hogar
+TamHog,Tamano del Hogar
+ZONA,Zona (urbano/rural)
+A3,Relacion de parentesco con el(la) jefe(a) de hogar
+A4,Sexo
+A5,Edad
+NivInst,Nivel de Instrucción
+Escolari,Años de escolaridad
+RamaEmpPri,Rama de Actividad en el Empleo Prinicipal
+OcupEmpPri,Ocupación en el Empleo Prinicipal
+CondMig,Condicion Migratoria
+RegNac,Region de Nacimiento
+np,Nivel de Pobreza
+A8A,Primera mención de tipo de discapacidad
+A8B,Segunda mención de tipo de discapacidad
+A13,Asistencia a educación formal
+A14,Ultimo año aprobado
+V1,Tipo de Vivienda
+V2A,Tipo de Tenencia de la Vivienda
+V8,Cantidad de cuartos para dormir en la vivienda
+EFI,Estado físico de la vivienda
+HacDor,Condición de hacinamiento según dormitorios
+V12,Fuente de agua de consumo de la vivienda
+V13A,Servicio sanitario de la vivienda
+trnc,Transferencias Regimen No Contributivo
+tbc,Transferencias Becas
+timas,Transferencias IMAS
+ts,Transferencias Subsidios
+ithn,Ingreso Total del Hogar Neto
+lp,Valor de la Linea de Pobreza
+cba,Valor de la Canasta Basica Alimentaria
+CondAct,Condicion de Actividad
+B6,Disponibilidad para Trabajar
+SecInsPri,Sector Industrial Empleo Principal
+C10,Tamano del establecimiento
+V21,Este hogar recibió bono de vivienda
+V21A,En que anno
+A9A,Recibe ayuda del IMAS
+A10A,Recibe algun servicio del CEN-CINAI
+A11,Condición de aseguramiento
+A19A,Recibe Beca?
+A15A,Tipo de centro educativo al que asistió (asiste)
