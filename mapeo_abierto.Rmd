@@ -7,7 +7,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r setup, include = FALSE}
+```{r setup, warning = FALSE, message = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 library(gdalUtils)
 library(rgdal)
@@ -16,11 +16,11 @@ library(sf)
 library(raster)
 library(tidyverse)
 library(leaflet)
-
-#install.packages(c("gdalUtils", "rgdal", "rmapshaper"))
+library(osmdata)
+library(tmap)
 ```
 
-# Ejemplo de movilidad.
+# Ejemplo de movilidad usando SNIT: Costa Rica
 
 Lo primero que hacemos es buscar de preferencia un WFS (Web Feature Server) para listar los archivos espaciales disponibles en ese WFS. Para este caso listamos el WFS del `MOPT` y el `IGN Cartografía 1:5mil`. Son las propuestas para esta temática.
 
@@ -134,4 +134,38 @@ leaflet() %>%
 ```
 
 
-# Ejemplo con 
+# Ejemplo utilizando OpenStreetMap:
+
+Para este caso la ejemplificación será para el contón de Grecia, y se van a tomar los comercios, los caminos y los ríos de dicho cantón. A continuación se seleccionan dichos elementos geográficos alrededor del cantón de Grecia:
+
+```{r}
+grecia_comercios <- opq(bbox = c(-84.36, 9.99, -84.21, 10.17)) %>% 
+  add_osm_feature(key = 'amenity') %>% 
+  osmdata_sf()
+
+grecia_caminos <- opq(bbox = c(-84.36, 9.99, -84.21, 10.17)) %>% 
+  add_osm_feature(key = 'highway') %>% 
+  osmdata_sf()
+
+grecia_rios <- opq(bbox = c(-84.36, 9.99, -84.21, 10.17)) %>% 
+  add_osm_feature(key = 'waterway') %>% 
+  osmdata_sf()
+```
+
+Utilizando el paquete `tmap` vamos a crear una visualización similar a la generada con `leaflet`, y que de hecho este paquete está basado en `leaflet`:
+
+```{r}
+tmap_mode("view")
+
+tm_shape(cantones %>% filter(canton == "Grecia")) + 
+  tm_borders("red", lwd = 3, lty = "dashed") + 
+tm_shape(grecia_rios$osm_lines) +
+  tm_lines("blue") + 
+tm_shape(grecia_caminos$osm_lines) +
+  tm_lines() +
+tm_shape(grecia_comercios$osm_polygons) +
+  tm_polygons() +
+tm_shape(grecia_comercios$osm_points %>% filter(!is.na(name))) +
+  tm_dots()
+```
+
