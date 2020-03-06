@@ -25,17 +25,67 @@ Por suerte podemos leer esto en R usando el paquete `harbor`
 install.packages("foreign")
 ```
 
-## Leer datos
+## Leer datos de las encuestas 2016-2019
+
+Nos limitaremos a cargar las variables de interés
+
+El diccionario completo de variables se encuentra en le siguiente link:
+
+http://sistemas.inec.cr/pad4/index.php/catalog/239/datafile/#page=F1&tab=data-dictionary
 
 ```{r}
 library(foreign)
-archivo <- file.choose()
-datos <- read.spss(archivo, to.data.frame = TRUE, add.undeclared.levels = "no")
+library(dplyr)
+
+#vector con los nombres de las variables de interes
+variables_interes <- c("REGION", "FACTOR", "HOGAR", "TamHog", "ZONA", "A3", "A4", "A5", "NivInst", "Escolari",
+                       "CondAct", "RamaEmpPri", "OcupEmpPri", "CondMig", "RegNac", "np", "A8A", "A8B", "A13", "A14", "V1",
+                       "V2A", "V8", "EFI", "HacDor", "V12", "V13A", "trnc", "tbc",
+                       "timas", "ts", "ithn", "lp", "cba", 
+                       "B6", "SecInsPri", "C10", "V21", "V21A", "A9A", "A10A", "A11", "A19A", "A15A")
+
+#datos 2016
+archivo_2016 <- file.choose()
+
+datos_2016 <- read.spss(archivo_2016, to.data.frame = TRUE, add.undeclared.levels = "no") %>% 
+  select(one_of(variables_interes)) %>% 
+  mutate(anno = 2016)
+
+#datos 2017
+archivo_2017 <- file.choose()
+
+datos_2017 <- read.spss(archivo_2017, to.data.frame = TRUE, add.undeclared.levels = "no") %>% 
+  select(one_of(variables_interes)) %>% 
+  mutate(anno = 2017)
+
+#datos 2018
+archivo_2018 <- file.choose()
+
+datos_2018 <- read.spss(archivo_2018, to.data.frame = TRUE, add.undeclared.levels = "no") %>% 
+  select(one_of(variables_interes)) %>% 
+  mutate(anno = 2018)
+
+#datos 2019
+archivo_2019 <- file.choose()
+
+datos_2019 <- read.spss(archivo_2019, to.data.frame = TRUE, add.undeclared.levels = "no") %>% 
+  select(one_of(variables_interes)) %>% 
+  mutate(anno = 2019)
+
+datos_2016_2019 <- bind_rows(datos_2016, datos_2017, datos_2018, datos_2019)
+
 ```
 
 Ahora tenemos los datos disponibles.
 
 ```{r}
-library(dplyr)
-glimpse(datos)
+glimpse(datos_2016_2019)
+```
+
+
+## Exportar datos a un csv
+
+```{r}
+library(readr)
+datos_2016_2019 %>% write_csv("enaho_2016_2019.csv")
 ```
