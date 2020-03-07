@@ -9,6 +9,32 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(readxl)
 library(dplyr)
+library(tidyr)
+library(janitor)
 library(ggplot2)
 ```
+
+# Leer datos
+
+```{r leer  datos}
+desastres <- read_xlsx("datos/Desastre_naturales_historico_mideplan.xlsx",
+                       skip = 2, 
+                       col_types = c("text", "numeric", "numeric", 
+                                     "numeric", "numeric", "numeric", 
+                                     "text", "text", "text", "numeric", 
+                                     "numeric", "numeric", "numeric", 
+                                     "numeric", "text", "text", "text",
+                                     "text", "text",  "text", "text",
+                                     "text", "text", "text", "text",
+                                     "text", "numeric", "numeric", 
+                                     "numeric", "numeric", "numeric",
+                                     "numeric", "numeric")) %>% 
+  select(-...2, -...3, -...4, -...5, -...6) %>% 
+  clean_names() %>% 
+  fill(c("evento", "tipo_de_evento", "categoria", "documento_de_referencia",
+         "ano_inicio", "ano_final", "mes_inicio", "mes_final",
+         "duracion_en_dias", "codigo", "provincia", "sector", "canton"), 
+       .direction = "down")
+```
+
 
