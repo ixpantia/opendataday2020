@@ -2,13 +2,55 @@
 title: "Desastres naturales"
 author: "ronny hernandez mora"
 date: "3/6/2020"
-output: html_document
+output: 
+  html_document: 
+    toc: yes
+    toc_float: yes
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(readxl)
 library(dplyr)
+library(tidyr)
+library(janitor)
 library(ggplot2)
 ```
+
+# ¿Qué son estos datos?
+
+El Ministerio de Agricultura y Ganadería, MAG, y el Ministerio de Planificación Nacional y Política Económica, MIDEPLAN, bajo la coordinación de la Secretaría Ejecutiva de Planificación Sectorial Agropecuaria, SEPSA, han llevado a cabo un proceso de trabajo conjunto bajo la figura de un Convenio, orientado a procesar la información de impacto de los fenómenos naturales en Costa Rica desde el año 1988.
+
+La información base ha sido obtenida de los Planes de Atención de Emergencias, elaborados por la Comisión Nacional de Prevención de Riesgos y Atención de Emergencias (CNE) y se ha complementado con documentación del Consejo Agropecuario Centroamericano (CAC) y la Comisión Económica para América Latina y el Caribe (CEPAL).
+
+
+# Leer datos
+
+
+```{r leer  datos}
+desastres <- read_xlsx("datos/Desastre_naturales_historico_mideplan.xlsx",
+                       skip = 2, 
+                       col_types = c("text", "numeric", "numeric", 
+                                     "numeric", "numeric", "numeric", 
+                                     "text", "text", "text", "numeric", 
+                                     "numeric", "numeric", "numeric", 
+                                     "numeric", "text", "text", "text",
+                                     "text", "text",  "text", "text",
+                                     "text", "text", "text", "text",
+                                     "text", "numeric", "numeric", 
+                                     "numeric", "numeric", "numeric",
+                                     "numeric", "numeric")) %>% 
+  select(-...2, -...3, -...4, -...5, -...6, -Código) %>% 
+  clean_names() %>% 
+  fill(c("evento", "tipo_de_evento", "categoria", "documento_de_referencia",
+         "ano_inicio", "ano_final", "mes_inicio", "mes_final",
+         "duracion_en_dias", "provincia", "sector", "canton"), 
+       .direction = "down")
+```
+
+```{r}
+glimpse(desastres)
+```
+
+
 
