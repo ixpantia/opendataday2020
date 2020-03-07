@@ -136,7 +136,7 @@ leaflet() %>%
 
 # Ejemplo utilizando OpenStreetMap:
 
-Para este caso la ejemplificación será para el contón de Grecia, y se van a tomar los comercios, los caminos y los ríos de dicho cantón. A continuación se seleccionan dichos elementos geográficos alrededor del cantón de Grecia:
+Para este caso la ejemplificación será para el cantón de Grecia, y se van a tomar los comercios, los caminos y los ríos de dicho cantón. A continuación se seleccionan dichos elementos geográficos alrededor del cantón de Grecia:
 
 ```{r}
 grecia_comercios <- opq(bbox = c(-84.36, 9.99, -84.21, 10.17)) %>% 
@@ -168,4 +168,15 @@ tm_shape(grecia_comercios$osm_polygons) +
 tm_shape(grecia_comercios$osm_points %>% filter(!is.na(name))) +
   tm_dots()
 ```
+
+Como insumo extra adjuntamos otra demostración en R que pueden consultar para guiarse, trata sobre un análisis de los desastres naturales en Costa Rica:
+
+[Visualización de la base de datos de desastres en Costa Rica](https://github.com/GuiAlDuS/DCC/blob/master/AnalisisDesastresCR.md)
+
+Además en caso de que no acostumbren utilizar R para el manejo de información y datos espaciales, muy posiblemente habrán escuchado hablar del software QGIS. Adjuntamos algunos insumos preparados para explorar en dicho software:
+
+[QGIS y OpenStreetMap (OSM): ¿Cuántas edificaciones hay en una región?](https://github.com/GuiAlDuS/tutorialesdatosabiertos/blob/master/QGISyOSM.md)
+
+
+[Creación de mapas en QGIS](https://github.com/GuiAlDuS/tutorialesdatosabiertos/blob/master/IntroMapasQGIS.md)
 
