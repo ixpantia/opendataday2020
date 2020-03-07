@@ -1,0 +1,96 @@
+---
+title: "Dataton"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Finanzas Públicas: Datos fiscales
+### Jorge Hidalgo R.
+
+
+El siguiente es el código que descarga el archivo de datos fiscales directamente desde el google drive llamado: frmVerCatCuadro.htm, que contiene los datos mensuales del Gobierno Central: ingresos, gastos y financiamiento, base devengado, en millones de colones. La información proviene del Banco Central de Costa Rica (BCCR). Información disponible de enero del 2006 a diciembre del 2019.
+
+La base es de suma importancia en el ámbito fiscal, ya que permite operaciones sobre las cuentas consideradas y ordenadas para obtener el déficit fiscal o déficit primario. El primero consiste en la diferencia entre los ingresos (incluyendo los desembolsos) y los gastos (considerando amortizaciones y el pago de intereses); en tanto que el segundo no incluye amortizaciones ni el pago de intereses. 
+
+De lo anterior se concluye que una comparación entre el déficit fiscal y déficit primario revela la carga que representa para el país la deuda, principalmente la deuda externa.
+
+Respecto al código, el primer punto es que se cargan los paquetes requeridos para el procesamiento de los datos:
+
+```{r paquetes}
+options(warn=-2)
+
+library(XML)
+library(reshape2)
+library(googledrive)
+```
+
+Luego se procede a definir un directorio (para este caso se especifica el escritorio) con el fin de depositar ahí el archivo en formato htm que contiene los datos y que será descargado desde el google drive:
+
+
+Se procede a crear la conexión con google drive y descargar el archivo:
+
+```{r drive}
+
+#Estos comandos se utilizan para que google drive de forma interactive obtenga las credenciales para loguerse
+ttt <- drive_auth()
+saveRDS(ttt, "token.rds")
+
+drive_download(overwrite = TRUE, file = "frmVerCatCuadro.htm")
+```
+
+Se carga la base datos y se hace la limpieza y reacomodo, dado que tiene filas sin valores y los datos se encuentran en columnas por periodo. El resultado final sera una base de datos llamada data que contenga 3 variables: cuenta, periodo y valor.
+
+```{r datos}
+data <- as.data.frame(readHTMLTable("frmVerCatCuadro.htm", stringsAsFactors = TRUE, encoding = "UTF-8"))
+
+data <- as.data.frame(data[-c(1:4),])
+n <- dim(data)[1]
+m <- dim(data)[2]
+
+cuentas <- data[,1]
+cuentas <- as.character(cuentas)
+cuentas <- cuentas[1:(n-1)]
+
+temp <- data[,2:m]
+
+j <- 1
+for (j in 1:(m-1)) {
+  temp[,j] <- as.numeric(gsub(",", ".", gsub("\\.", "", gsub("[^0-9\\,]", "", temp[,j]))))
+}
+
+temp <-temp[complete.cases(temp),]
+
+data <- cbind(cuentas, temp)
+data$cuentas <- as.character(data$cuentas)
+
+allmonths <- seq(from = as.Date("2006-01-01"), as.Date("2019-12-01"), by="months")
+allmonths <- as.data.frame(allmonths)
+periodo <- cbind(format(allmonths,"%Y"), format(allmonths,"%m"))
+periodo <- as.data.frame(paste0(periodo[,1], periodo[,2]))
+colnames(periodo) <- c("periodo")
+periodo <- t(periodo)
+
+names <- c("cuentas", periodo)
+colnames(data) <- names
+
+head(data[,1:5])
+
+```
+
+Como la información está de forma columnar se procede a pivotear la tabla:
+
+```{r pivoteo}
+data <- melt(data = data, id.vars = c("cuentas"))
+```
+
+Se concluye asignado los nombres deseados a las columnas de la tabla final:
+
+```{r pnombres}
+colnames(data) <- c("cuentas", "periodo", "valor")
+head(data)
+```
+
+De esta forma los datos están listos para proceder con análsiis de interés.
