@@ -1,0 +1,107 @@
+---
+title: "Datos Ambientales"
+author: "Erick Calderon, Ronny Hernandez y Sergio Fernandez"
+date: "6/3/2020"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F)
+
+library(tidyverse)
+library(kableExtra)
+
+```
+
+# Introducción 
+
+Se detectaron fuentes relacionadas de alguna forma, y en un sentido amplio, con la dinámica medio ambiental y la interacción humana. En ese sentido y por la limitaciónde fuentes públicas, se utilizarán datos que permitan a los participantes del datatón del *Costa Rica Open Data Day* sobre la evolución de la disponibilidad de recursos naturales, su uso por parte del ser humano y sus consecuencias recíprocas.
+
+Se seleccionaron bases de datos que con riqueza para su análisis, disponibles en portales institucionales de acceso público. El resultado  de esta selección resultó en las siguientes bases datos (con su respectiva fuente)
+
+
+```{r}
+
+tabla_intro <- data.frame(Tema = c("EMisiones de CO2 por rama de actividad ecnómica", 
+                                   "Balance Energético de Costa Rica",
+                                   "Pérdidas por Desastres Naturales"), 
+                          `Intitución a cargo`= c("Banco Central de Costa Rica",
+                                                  "Secretaría de Planificación-Subsecretaría Energía- MINAE", "Ministerio de Planifiación Económica - Mideplan"), 
+                           url = c("https://www.bccr.fi.cr/seccion-cuentas-ambientales/cuentas-ambientales",
+                                   "https://sepse.go.cr/ciena/balances-energeticos/#1576186020566-51408349-4349",
+                                   "https://www.mideplan.go.cr/perdidas-ocasionadas-fenomenos-naturales"))
+
+kable(tabla_intro) %>% kable_styling(full_width = F) %>%
+  column_spec(1, width = "30em",bold = T, border_right = T) %>%
+  column_spec(2, width = "30em", background = "#ccffcc") %>% 
+  column_spec(3, width = "30em", background = "#b3ffb3")
+  
+
+```
+
+# Preprocesamiento 
+
+## 1. EMisiones de CO2 por rama de actividad económica
+
+**Encargado: Sergio Fernández**
+
+"La cuenta de energía para Costa Rica se enfoca en los flujos que representan tanto las fuentes como los usos de la energía en términos físicos, según las diferentes actividades económicas y de consumo en las que se utiliza. Esto permite identificar intensidades energéticas relativas y variaciones en la eficiencia energética, y a su vez, realizar comparaciones directas entre la información física de la cuenta y los indicadores del sistema de contabilidad nacional.
+
+A partir del detalle del uso físico de energía, se estiman las emisiones de dióxido de carbono (CO2) generadas por el consumo de productos energéticos. Esta es una aplicación práctica que permite describir, desde un enfoque económico, la presión que se ejerce sobre el ambiente por el uso de productos energéticos. Las emisiones se muestran en términos brutos, por lo que las reducciones de emisiones que otras actividades pueden generar de forma equivalente no se registran en esta cuenta." (BCCR)
+
+```{r, echo= T}
+
+path2<-"https://activos.bccr.fi.cr/sitios/bccr/cuentasambientales/DocCuentaEnergia/Cuenta_Energia_2011_2015.xlsx"
+
+download.file(path2, destfile = "energia.xlsx", mode = "wb")
+
+
+```
+
+
+```{r,echo=T}
+library(readxl)
+hojas<-str_subset(excel_sheets("energia.xlsx"), "(USO.*)|(Emi)")
+
+```
+
+
+```{r, echo=TRUE}
+tablas<- lapply(hojas, function(x) read_xlsx("energia.xlsx", sheet = x, col_names = T, skip = 4)) %>% set_names(hojas)
+
+
+
+tablas <- lapply(tablas, function(x) x[!is.na(x$AEE),] %>% set_names(iconv(colnames(.),from="UTF-8",to="ASCII//TRANSLIT")))
+
+
+indicador<-str_detect(names(tablas), "USO")
+tablas <- list(uso =tablas[indicador], emisiones=tablas[!indicador])
+tablas<-lapply(tablas, function(x) bind_rows(x, .id="ano"))
+```
+
+### Tabla de Emisiones
+
+Describir
+
+```{r, echo=T}
+library(DT)
+datatable(tablas$emisiones, rownames = FALSE, filter="top", options = list(pageLength = 5, scrollX=T))
+
+
+```
+
+
+### Tabla de Uso fuentes energéticas
+
+Describir
+
+```{r, echo = T}
+
+datatable(tablas$uso, rownames = FALSE, filter="top", options = list(pageLength = 5, scrollX=T))
+
+
+```
+
