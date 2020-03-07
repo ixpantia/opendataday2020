@@ -2,12 +2,20 @@
 title: "Desastres naturales"
 author: "ronny hernandez mora"
 date: "3/6/2020"
-output: 
-  html_document: 
+always_allow_html: yes
+output:
+  html_document:
+    code_folding: hide
+    self_contained: true
+    keep_md: false
+    number_sections: no
+    theme: spacelab
     toc: yes
-    toc_float: yes
+    toc_float:
+      collapsed: no
+editor_options:
+  chunk_output_type: console
 ---
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(readxl)
@@ -26,9 +34,11 @@ La información base ha sido obtenida de los Planes de Atención de Emergencias,
 
 # Leer datos
 
+Descargados los datos del cubo en formato `.xlsx` los importamos y los 
+limpiamos hasta llevarlos a un formato ordenado.
 
-```{r leer  datos}
-desastres <- read_xlsx("datos/Desastre_naturales_historico_mideplan.xlsx",
+```{r leer  datos, message = FALSE}
+desastres <- read_xlsx("../datos/Desastre_naturales_historico_mideplan.xlsx",
                        skip = 2, 
                        col_types = c("text", "numeric", "numeric", 
                                      "numeric", "numeric", "numeric", 
@@ -52,5 +62,41 @@ desastres <- read_xlsx("datos/Desastre_naturales_historico_mideplan.xlsx",
 glimpse(desastres)
 ```
 
+# Exploracion
+
+Iniciamos la exploración de los datos con una serie de preguntas básicas
+
+## ¿Cuántos desastres por año se han dado?
+
+```{r}
+desastres %>% 
+  group_by(ano_inicio) %>% 
+  tally(sort = TRUE)
+```
+
+```{r}
+desastres %>%
+  group_by()
+```
+
+
+## ¿Qué categoría de desastre por año se dió?
+```{r}
+ggplot(data = desastres, aes(x = as.factor(ano_inicio), fill = categoria)) +
+  geom_bar(position = "dodge")
+```
+
+## Categoría de desastre por año por provincia
+```{r}
+ggplot(data = desastres, aes(x = as.factor(ano_inicio), fill = categoria)) +
+  geom_bar(position = "dodge") +
+  scale_fill_viridis_d() +
+  facet_wrap(~provincia) +
+  labs(x = "Año del desastre", y = "Cantidad de desastres", fill = "Categoría") +
+  theme_linedraw(base_size = 16) +
+  theme(axis.text.x = element_text(angle = 45, h = 1))
+```
+
+## ¿Ha afectado más al sector público o privado?
 
 
