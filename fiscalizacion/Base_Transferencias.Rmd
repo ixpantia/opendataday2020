@@ -1,0 +1,55 @@
+---
+title: "Datos Transferencias de Instituciones"
+author: "Osvaldo Ureña"
+date: "6/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Los siguientes datos se obtuvieron del Sistema de Información sobre Planes y Presupuestos (SIPP)  de la Contraloría General de la República.
+Los datos son anuales y comprenden el período de 2006 a 2019, en total se descargan 14 archivos y se consolidan en una sola base, en dicha base las cifras estan espresadas en millones de colones.
+Esta base es importante por que permite medir a tráves del tiempo si las instituciones tienen un balance positivo o negativo y además pertmite cuantificar dicho balance.
+Se propone con dicha base efectuar análisis estadístico exploratorio o gráfico.
+
+Se comparte a continuación el código utilizado para consolidar dichas bases en una sola.
+
+```{r, message=FALSE, warning=FALSE}
+cajon<-list() #Crea lista donde se guardara cada base
+periodo<-seq(2006,2019) #Vector con lo años de las bases
+# El siguiente for abre cada base, hace el arreglo necesario a cada base y le adjunta el período.
+for (i in 1:14) {
+  datos<-read.csv(paste0("/home/osvaldo/Descargas/transferencias/transferencia_por_instituciones(",i-1,").csv"), sep=";", 
+                  col.names =c("INSTITUCION", "INGRESO", "EGRESO", "DIFERENCIA") )
+  datos$INGRESO<-gsub("\\.","",datos$INGRESO)
+  datos$INGRESO<-as.numeric(gsub("\\,",".",datos$INGRESO))
+  datos$EGRESO<-gsub("\\.","",datos$EGRESO)
+  datos$EGRESO<-as.numeric(gsub("\\,",".",datos$EGRESO))
+  datos$DIFERENCIA<-gsub("\\.","",datos$DIFERENCIA)
+  datos$DIFERENCIA<-as.numeric(gsub("\\,",".",datos$DIFERENCIA))
+  datos$PERIODO<-periodo[[i]]
+  datos<-as.data.frame(datos)
+  cajon[[i]]<-datos
+  }
+
+#Con el siguiente while se hace append de cada base para consolidarlas en uan sola base
+transferencias<-cajon[[1]]  
+x<-2
+while (x<15){
+  transferencias<-rbind(cajon[[x]],transferencias)
+  x<-x+1
+}
+```
+A continuación vemos la estructura final de dicha base
+```{r, echo=FALSE}
+str(transferencias)
+```
+
+Se muestran las primeras 6 entradas de la base consolidada
+```{r, echo=FALSE}
+head(transferencias)
+```
+
+
