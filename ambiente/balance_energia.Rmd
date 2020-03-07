@@ -1,6 +1,6 @@
 ---
 title: "Datos Ambientales"
-author: "Erick Calderon, Ronny Hernandez y Sergio Fernandez"
+author: "Sergio Fernandez"
 date: "6/3/2020"
 output: 
   html_document:
@@ -52,6 +52,7 @@ kable(tabla_intro) %>% kable_styling(full_width = F) %>%
 
 A partir del detalle del uso físico de energía, se estiman las emisiones de dióxido de carbono (CO2) generadas por el consumo de productos energéticos. Esta es una aplicación práctica que permite describir, desde un enfoque económico, la presión que se ejerce sobre el ambiente por el uso de productos energéticos. Las emisiones se muestran en términos brutos, por lo que las reducciones de emisiones que otras actividades pueden generar de forma equivalente no se registran en esta cuenta." (BCCR)
 
+
 ```{r, echo= T}
 
 path2<-"https://activos.bccr.fi.cr/sitios/bccr/cuentasambientales/DocCuentaEnergia/Cuenta_Energia_2011_2015.xlsx"
@@ -62,46 +63,141 @@ download.file(path2, destfile = "energia.xlsx", mode = "wb")
 ```
 
 
+<center><h1>Notas metodológicas sobre la cuenta de energía y emisiones 2011-2015</h1></center>										
+										
+"La cuenta de energía disponible para Costa Rica muestra el uso de las distintas fuentes energéticas desde que son tomadas directamente de los recursos naturales (energía primaria) y hasta que se transforman en productos energéticos (energía secundaria), contabilizando una única vez cuando la energía es consumida. 
+
+A partir del detalle del uso físico de energía se calcula la cuenta de emisiones de dióxido de carbono (CO2) generadas por el consumo de productos energéticos, por cada una de las actividades económicas. 
+
+Para la elaboración de la cuenta de energía se utilizaron las cantidades consumidas de cada producto, indicadas en el Balance Energético generado por la Secretaría de Planificación Subsectorial de Energía (SEPSE) del Ministerio de Ambiente y Energía. Los totales de control se desagregaron utilizando el consumo indicado en los cuadros de Oferta y Uso (COU) del Banco Central de Costa Rica (BCCR) y los informes de ventas de la Refinadora Costarricense de Petróleo (RECOPE). 
+
+Al utilizar la información del COU para la desagregación del uso por actividad económica, se asume que todas las actividades pagan los mismos precios por los productos energéticos. Se hace una excepción con la actividad de pesca, en la cual se consideró el precio promedio particular que pagan por la compra de gasolina y diesel, para la desagregación en volumen de su consumo. 
+
+Las ventas realizadas por RECOPE se clasificaron siguiendo el principio de residencia, por lo que todas las compras de combustibles por parte de no residentes se asignaron como exportaciones. 
+
+Las emisiones de CO2 se obtienen a partir de multiplicar el uso del recurso energético por un factor de emisión. Para el caso de los combustibles, se consideran los factores de emisión publicados por el Instituto Meteorológico Nacional. Estos factores están dados en términos de kilogramos de CO2 por terajulio, según la equivalencia energética de referencia utilizada en los Balances Energéticos. Para el resto de productos energéticos se utilizan los valores de referencia del IPCC 2006 (siglas en inglés para Grupo Intergubernamental de Expertos sobre el Cambio Climático).
+
+Para el cálculo de las emisiones no se considera el uso energético asociado a las exportaciones e inventarios. 
+
+La cuenta de energía y emisiones está en un proceso de revisión continua. Los valores publicados pueden variar debido a actualizaciones de la estadística básica o bien, a mejoras en los indicadores utilizados para construirla."										
+									
+
 ```{r,echo=T}
 library(readxl)
-hojas<-str_subset(excel_sheets("energia.xlsx"), "(USO.*)|(Emi)")
+hojas<-str_subset(excel_sheets("energia.xlsx"), "Emi")
 
 ```
 
 
 ```{r, echo=TRUE}
-tablas<- lapply(hojas, function(x) read_xlsx("energia.xlsx", sheet = x, col_names = T, skip = 4)) %>% set_names(hojas)
+library(zoo)
+excel_toTidy <- function(archivo, hoja_excel, saltar_filas = 0){
+
+cols <- read_xlsx(archivo, sheet = hoja_excel , col_names = F, skip = saltar_filas)[c(1,2),]
+
+
+cols[1, ] <- na.locf(as.character(cols[1, ]),
+                     na.rm = FALSE)
+
+cols <- vapply(X = cols,
+               FUN = function(x) if (is.na(x[1]))
+                 x[2]
+               else 
+                 paste0(x, collapse = "_"),
+               FUN.VALUE = character(1))
+
+importado <- read_excel(archivo, sheet = hoja_excel, col_names = FALSE,skip = 5) %>%
+  setNames(cols)
+
+return(importado)
+
+}
+
+archivo = "energia.xlsx"
+
+tablas <- lapply(hojas, function(x) excel_toTidy(archivo, x, 3) %>% 
+                   gather(key = "fuente", value = "emisiones", -1, -2) %>%
+                   filter(!str_detect(fuente, "TOTAL|Total|NA_NA") & !is.na(`Actividad económica`) & !str_detect(`Actividad económica`, "TOTAL")) %>% 
+                   separate(fuente, into = c("Nivel", "fuente"), sep = "_")) %>%
+  set_names(hojas)
+
+tablas <- lapply(tablas, function(x) x %>% set_names(iconv(colnames(.),from="UTF-8",to="ASCII//TRANSLIT"))) 
+
+emisiones <- bind_rows(tablas, .id = "anio") %>% mutate(anio = str_replace(anio, "Emisiones", "20"))
 
 
 
-tablas <- lapply(tablas, function(x) x[!is.na(x$AEE),] %>% set_names(iconv(colnames(.),from="UTF-8",to="ASCII//TRANSLIT")))
-
-
-indicador<-str_detect(names(tablas), "USO")
-tablas <- list(uso =tablas[indicador], emisiones=tablas[!indicador])
-tablas<-lapply(tablas, function(x) bind_rows(x, .id="ano"))
 ```
 
-### Tabla de Emisiones
 
-Describir
 
-```{r, echo=T}
+
+```{r, echo=TRUE}
+
 library(DT)
-datatable(tablas$emisiones, rownames = FALSE, filter="top", options = list(pageLength = 5, scrollX=T))
+datatable(emisiones, rownames = FALSE, filter="top", options = list(pageLength = 5, scrollX=T))
 
 
 ```
+
+
+
+
 
 
 ### Tabla de Uso fuentes energéticas
 
-Describir
+```{r}
+library(readxl)
+hojas<-str_subset(excel_sheets("energia.xlsx"), "USO")
+
+```
+
 
 ```{r, echo = T}
 
-datatable(tablas$uso, rownames = FALSE, filter="top", options = list(pageLength = 5, scrollX=T))
+tablas <- lapply(hojas, function(x) excel_toTidy(archivo, x, 3) %>% 
+                   gather(key = "fuente", value = "energia", -1, -2) %>%
+                   filter(!str_detect(fuente, "TOTAL|Total|NA_NA|producido") & !is.na(`Actividad económica`) & !str_detect(`Actividad económica`, "TOTAL")) %>% 
+                   separate(fuente, into = c("Nivel", "fuente"), sep = "_")) %>%
+  set_names(hojas)
 
+tablas <- lapply(tablas, function(x) x %>% set_names(iconv(colnames(.),from="UTF-8",to="ASCII//TRANSLIT"))) 
+
+uso_energia <- bind_rows(tablas, .id = "anio") %>% mutate(anio = str_replace(anio, "USOEnergía", "20"))
+
+```
+
+
+```{r, echo = T}
+
+datatable(uso_energia, rownames = FALSE, filter="top", options = list(pageLength = 5, scrollX=T))
+
+
+```
+
+
+# Balance Energético de Costa Rica según SEPSE (Secretaría Planificación Subsector Energía)
+
+El Balance Energético Nacional es un análisis anual de la estructura energética del país, en el que se destacan los aspectos más relevantes tanto a nivel de sectores y actividades de la cadena energética como de las diferentes fuentes de energía primaria y secundaria. Se incluye la evolución de las principales variables con respecto al año de análisis.
+
+
+```{r, message=F}
+
+anios <- seq(from = 2012, length.out = 7)
+
+descargas <- lapply(anios, function(x) download.file(str_glue("https://sepse.go.cr/documentos/Balance_Energetico_{x}.xlsx"), destfile = str_glue("balance_energetico_{x}.xlsx"), mode = "wb"))
+
+
+```
+ 
+```{r}
+
+
+archivo <- str_subset(list.files(getwd()), "balance_energetico_")
+
+tablas <- lapply(archivo, function(x) excel_toTidy(archivo = x, hoja_excel = 1, 2) ) 
+tablas <- lapply(tablas, function(x) x %>% set_names(iconv(colnames(.),from="UTF-8",to="ASCII//TRANSLIT"))) 
 
 ```
 

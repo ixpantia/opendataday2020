@@ -1,0 +1,136 @@
+---
+title: 'Base de Ingresos y Gastos: Sector Público Descentralizado y Gobierno Central'
+author: "Sergio Fernandez"
+date: "6/3/2020"
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+Descargamos la carpeta con las bases de datos y la descomprimimos
+
+```{r}
+temp <- tempfile()
+path<-"https://cgrfiles.cgr.go.cr/publico/docsweb/documentos/publicaciones-cgr/memoria-anual/2018/bases-datos-18.zip"
+
+download.file(path, temp)
+unzip(temp)
+
+
+```
+
+
+
+```{r}
+sp_desc_path <- "Bases/MA2018_BDSectorDescentralizado2014-2018.xlsx"
+gob_cent_path <- "Bases/MA2018-BDGobiernoCentral2007-2018.xlsx"
+
+library(readxl)
+library(DT)
+
+```
+
+
+
+
+# Ingresos y Gastos Sector Público Descentralizado
+
+
+```{r}
+hojas_sp_desc <- excel_sheets(sp_desc_path)
+data.frame(hojas_sp_desc ) %>% datatable()
+```
+
+
+```{r}
+
+tablas_spdesc<- lapply(hojas_sp_desc, function(x) read_xlsx(sp_desc_path, sheet = x, col_names = T, skip = 0)) %>% set_names(hojas_sp_desc)
+
+```
+ 
+`r unname(tablas_spdesc[["Presentación"]][3,1])`
+ 
+## Ingresos Sector Público Descentralizado
+
+### Glosario
+
+```{r, echo = TRUE}
+datatable(tablas_spdesc$`Definiciones Ingresos`)
+```
+
+### Tabla de Datos
+
+```{r, echo = TRUE}
+datatable(head(tablas_spdesc$Ingresos))
+```
+
+
+## Gastos Sector Público Descentralizado
+
+### Glosario
+
+```{r, echo = TRUE}
+datatable(tablas_spdesc$`Definiciones Egresos`)
+```
+
+### Tabla de datos
+
+```{r, echo = TRUE}
+datatable(head(tablas_spdesc$Egresos))
+```
+
+
+
+# Ingresos y Gastos Gobierno Central
+
+
+
+```{r}
+hojas_gobcent <- excel_sheets(gob_cent_path)
+data.frame(hojas_gobcent) %>% datatable()
+```
+
+
+```{r, echo = TRUE}
+
+tablas_gobcent <- lapply(hojas_gobcent, function(x) read_xlsx(gob_cent_path, sheet = x, col_names = T, skip = 0)) %>% set_names(hojas_gobcent)
+```
+
+`r unname(tablas_gobcent[["Presentación"]][4,1])`
+
+
+## Ingresos del Gobierno Central
+
+### Glosario
+
+```{r, echo = TRUE}
+datatable(tablas_gobcent$GlosarioIngresos)
+```
+
+
+### Tabla de Datos
+
+```{r, echo = TRUE}
+datatable(head(tablas_gobcent$Ingresos))
+```
+
+## Egresos del Gobierno Central
+
+### Glosario
+
+```{r, echo = TRUE}
+datatable(head(tablas_gobcent$GlosarioEgresos))
+```
+
+### Tabla de Datos
+
+```{r, echo = TRUE}
+datatable(head(tablas_gobcent$Egresos))
+
+```
+
