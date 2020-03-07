@@ -23,6 +23,8 @@ library(dplyr)
 library(tidyr)
 library(janitor)
 library(ggplot2)
+library(plotly)
+library(scales)
 ```
 
 # ¿Qué son estos datos?
@@ -79,11 +81,29 @@ desastres %>%
   group_by()
 ```
 
-
 ## ¿Qué categoría de desastre por año se dió?
 ```{r}
+desastres %>%
+  group_by(ano_inicio,categoria)%>%
+  summarise(perdidastotales=sum(valor_const_por_componente_en_dolares)) %>%
+  ggplot(aes(ano_inicio,perdidastotales,
+             col=categoria,
+             group=categoria)) +
+  geom_point()+
+  geom_line(size=1)+
+  theme_classic()+
+  scale_x_continuous(breaks=seq(1987,2020, 3))+
+  labs(x="Año",y="Perddas totales ($)",color="Categoria")+
+  scale_color_viridis_d() +
+  scale_y_continuous(labels=scales::dollar)
+```
+
+
+```{r}
 ggplot(data = desastres, aes(x = as.factor(ano_inicio), fill = categoria)) +
-  geom_bar(position = "dodge")
+  geom_bar(position = "dodge") +
+  theme_linedraw(base_size = 10) +
+  theme(axis.text.x = element_text(angle = 45, h = 1))
 ```
 
 ## Categoría de desastre por año por provincia
@@ -99,4 +119,78 @@ ggplot(data = desastres, aes(x = as.factor(ano_inicio), fill = categoria)) +
 
 ## ¿Ha afectado más al sector público o privado?
 
+```{r}
+ggplot(data = desastres, aes(x = as.factor(ano_inicio),
+                             y = valor_const_por_componente_en_colones,
+                             fill = tipo_de_bien)) + 
+  geom_bar(stat = "identity", position  = "dodge") +
+  scale_fill_viridis_d() +
+  theme_linedraw(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 45, h = 1))
+```
+
+## Categorías que más han afectado
+
+## Evolución 
+
+```{r}
+desastres %>%
+  group_by(categoria, provincia, ano_inicio) %>%
+  summarise(
+    total = n(),
+    monto_total = sum(valor_const_por_componente_en_colones),
+  ) %>% 
+  # arrange(desc(monto_total)) %>% 
+  ggplot(aes(x = reorder(provincia, -monto_total), y = monto_total, 
+             color = categoria)) +
+  geom_point(aes(size = total, frame = ano_inicio)) +
+   theme(axis.text.x = element_text(angle = 45, h = 1))
+```
+
+
+```{r}
+desastres %>% 
+  group_by(sector, ano_inicio) %>% 
+  tally(sort = TRUE) %>% 
+  ggplot(aes(x = as.factor(ano_inicio), y = n, fill =  sector)) +
+  scale_fill_viridis_d() +
+  geom_bar(stat = "identity") + 
+  labs(x = "Año", y = "Total", fill = "Sector afectado") +
+  theme_linedraw() +
+  theme(axis.text.x = element_text(angle = 45, h = 1)) 
+```
+
+## Sector afectado por tipo de desastre
+
+```{r}
+ggplot(desastres, aes(x = categoria, y = sector)) + 
+  geom_count() +
+  theme_linedraw() 
+```
+
+##
+
+
+```{r}
+resumen <- desastres %>%
+  group_by(categoria, provincia, ano_inicio) %>%
+  summarise(
+    total = n(),
+    monto_total = sum(valor_const_por_componente_en_colones, na.rm = TRUE),
+    monto_log = log(monto_total)
+  ) 
+
+ggplot(data = resumen, aes(x = reorder(provincia, -monto_total), 
+                           y = monto_total)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 45, h = 1))
+  
+base <- resumen %>% 
+  plot_ly(x = ~provincia, y = ~monto_log,
+          text = ~provincia, hoverinfo = "text") 
+base %>% 
+  add_markers(color = ~provincia, frame = ~ano_inicio,
+              colors = viridis_pal(option = "D")(3)) %>% # agregar symbol 
+  animation_opts(frame = 1300, easing = "linear") # ver opciones del easing
+```
 
