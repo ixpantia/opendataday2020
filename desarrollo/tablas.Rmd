@@ -1,0 +1,133 @@
+---
+title: "Tablas"
+author: "Andrea Vargas"
+date: "3/8/2020"
+output: html_document
+---
+Cargar datos y librerias
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+
+library(tidyr)
+library(readr)
+datos <- read_csv("enaho_2016_2019.csv")
+```
+
+Distribución absoluta de hogares de por nivel de pobreza segun region
+```{r}
+pob_region <- datos %>% 
+  filter(A3 == "Jefe o jefa",
+         anno == 2019) %>% 
+  group_by(REGION, np) %>% 
+  summarise(pop = sum(FACTOR)) %>% 
+  ungroup() %>% 
+  group_by(REGION) %>% 
+  mutate(perc = pop/sum(pop)) 
+
+pob_region %>% 
+  select(-c(perc)) %>% 
+  spread(key = np, value = pop) %>% 
+  knitr::kable()
+```
+
+Distribución porcentual de hogares de por nivel de pobreza segun region, total por fila
+```{r}
+pob_region %>% 
+  select(-c(pop)) %>% 
+  spread(key = np, value = perc) %>% 
+  knitr::kable()
+```
+
+
+Distribución absoluta de hogares de por nivel de pobreza segun sexo
+```{r}
+pob_sexo <- datos %>% 
+  filter(A3 == "Jefe o jefa",
+         anno == 2019) %>% 
+  group_by(A4, np) %>% 
+  summarise(pop = sum(FACTOR)) %>% 
+  ungroup() %>% 
+  group_by(A4) %>% 
+  mutate(perc = pop/sum(pop)) 
+
+pob_sexo %>% 
+  select(-c(perc)) %>% 
+  spread(key = np, value = pop) %>% 
+  knitr::kable()
+```
+
+Distribución porcentual de hogares de por nivel de pobreza segun sexo, total por fila
+```{r}
+pob_sexo %>% 
+  select(-c(pop)) %>% 
+  spread(key = np, value = perc) %>% 
+  knitr::kable()
+```
+
+Distribución porcentual de hogares de por nivel de pobreza segun sexo, total por columna
+```{r}
+pob_sexo2 <- datos %>% 
+  filter(A3 == "Jefe o jefa",
+         anno == 2019) %>% 
+  group_by(A4, np) %>% 
+  summarise(pop = sum(FACTOR)) %>% 
+  ungroup() %>% 
+  group_by(np) %>% 
+  mutate(perc = pop/sum(pop)) 
+
+pob_sexo2 %>% 
+  select(-c(pop)) %>% 
+  spread(key = np, value = perc) %>% 
+  knitr::kable()
+```
+
+Distribución absoluta de hogares de por nivel de pobreza segun zona
+```{r}
+pob_zona <- datos %>% 
+  filter(A3 == "Jefe o jefa",
+         anno == 2019) %>% 
+  group_by(ZONA, np) %>% 
+  summarise(pop = sum(FACTOR)) %>% 
+  ungroup() %>% 
+  group_by(ZONA) %>% 
+  mutate(perc = pop/sum(pop)) 
+
+pob_zona %>% 
+  select(-c(perc)) %>% 
+  spread(key = np, value = pop) %>% 
+  knitr::kable()
+```
+
+Distribución porcentual de hogares de por nivel de pobreza segun zona, total por fila
+```{r}
+pob_zona %>% 
+  select(-c(pop)) %>% 
+  spread(key = np, value = perc) %>% 
+  knitr::kable()
+```
+
+Distribución absoluta de hogares de por nivel de pobreza segun nivel de instrucción
+```{r}
+pob_edu <- datos %>% 
+  filter(A3 == "Jefe o jefa",
+         anno == 2019) %>% 
+  group_by(NivInst, np) %>% 
+  summarise(pop = sum(FACTOR)) %>% 
+  ungroup() %>% 
+  group_by(NivInst) %>% 
+  mutate(perc = pop/sum(pop)) 
+
+pob_edu %>% 
+  select(-c(perc)) %>% 
+  spread(key = np, value = pop) %>% 
+  knitr::kable()
+```
+
+Distribución porcentual de hogares de por nivel de pobreza segun nivel de instrucción, total por fila
+```{r}
+pob_edu %>% 
+  select(-c(pop)) %>% 
+  spread(key = np, value = perc) %>% 
+  knitr::kable()
+```
