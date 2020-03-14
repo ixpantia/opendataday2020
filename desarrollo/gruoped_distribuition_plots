@@ -1,0 +1,28 @@
+library(data.table)
+library(purrr)
+library(magrittr)
+library(ggplot2)
+
+# lee el archivo agregado de encuestas de hogares 2016 a 2019 
+enaho <- data.table::fread('enaho_2016_2019.csv', encoding = 'Latin-1')
+
+# calcula la distrobucion agrupada por cada una de las vaiables categoricas
+distribucion_np <- colnames(discard(enaho, is.numeric)) %>%
+  purrr::map(~enaho[A3 == 'Jefe o jefa', # filtra unicamente jefes de hogar ~ hogares
+                    .(pop = sum(FACTOR)), by = c(.x, 'np', 'anno') # suma la cantidad de hogares representados en cada fila
+                    ][, perc := pop/sum(pop), by = c('anno', .x)]) # agrega porcentajes por año y variable 
+
+# asigna los nombres de cada variable a la lista de tablas
+distribucion_np %<>% purrr::set_names(distribucion_np %>% purrr::map_chr(~colnames(.x)[1]))
+
+# crea una lista de graficos, uno para cada variable 
+distribucion_np_plots <- distribucion_np %>% purrr::map(~.x %>% 
+                                                          ggplot2::ggplot() + ggplot2::geom_line(aes(x = anno, y = perc, colour = np), size = 1.5) +
+                                                          ggplot2::facet_wrap(paste(sep = '~', colnames(.x)[1])) +
+                                                          ggplot2::ggtitle(colnames(.x)[1]))
+
+# guarda todos los graficos como imagenes independientes en el directorio /plots.
+# si esta carpeta no existe, el usuario debe crearla en su working directory
+purrr::walk2(distribucion_np_plots,
+             names(distribucion_np),
+             .f = ~ggplot2::ggsave(paste0('plots/', .y, '.png'), .x, width = 14, height = 7.5))
